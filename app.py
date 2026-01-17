@@ -1,7 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. الربط (حط مفتاحك هنا وتأكد إنه صح)
+# 1. الربط (AIzaSyAiX1ckt5kLlRVIl-dP9ad2YONj36itK-U)
 genai.configure(api_key="YOUR_API_KEY_HERE")
 
 # 2. التصميم (الكحلي اللي بنحبه)
@@ -47,3 +47,4 @@ if user_input:
             reply = ask_gemini(user_input)
             st.session_state.messages.append({"role": "assistant", "content": reply})
     st.rerun()
+
