@@ -1,17 +1,17 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. إعداد الصفحة
+# إعداد الصفحة
 st.set_page_config(page_title="Safe Space", page_icon="🧠")
 st.title("🧠 مستشارك النفسي الذكي")
 
-# 2. التأكد من المفتاح (نستخدم اسم المتغير API_KEY)
+# تأكدي إن الكلمة هنا هي "API_KEY" فقط
 if "API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["API_KEY"])
         
-        # جربي gemini-pro لأنه الأكثر استقراراً في النسخ الحالية
-        model = genai.GenerativeModel("gemini-pro")
+        # استخدمي الاسم ده بالتحديد، ده اللي هيحل مشكلة الـ 404
+        model = genai.GenerativeModel("gemini-1.5-flash-latest")
         
         if "messages" not in st.session_state:
             st.session_state.messages = []
@@ -26,7 +26,7 @@ if "API_KEY" in st.secrets:
                 st.markdown(prompt)
 
             with st.chat_message("assistant"):
-                # توليد الرد
+                # طلب الرد
                 response = model.generate_content(prompt)
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
