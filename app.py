@@ -2,144 +2,70 @@ import streamlit as st
 import edge_tts
 import asyncio
 import random
-import uuid
+import os
 from datetime import datetime
 
-# ================== الإعدادات ==================
-VOICE = "ar-EG-ShakirNeural"  # صوت راجل مصري طبيعي
-SESSION_ID = str(uuid.uuid4())
+# ---------- إعدادات ----------
+VOICE = "ar-EG-ShakirNeural"  # صوت راجل مصري
+USED_RESPONSES = set()
 
-if "memory" not in st.session_state:
-    st.session_state.memory = []
-
-if "used_angles" not in st.session_state:
-    st.session_state.used_angles = set()
-
-# ================== التحليل النفسي ==================
-def psychological_analysis(text):
-    text = text.lower()
-
-    states = {
-        "ضغط": ["مضغوط", "زهقان", "مخنوق", "مش قادر", "تعبان"],
-        "حيرة": ["مش عارف", "محتار", "تايه"],
-        "غضب": ["متعصب", "مقروف", "غضبان"],
-        "حزن": ["زعلان", "مكسور", "وحيد"],
-        "خوف": ["خايف", "قلقان", "متوتر"]
-    }
-
-    detected = []
-    for state, words in states.items():
-        if any(w in text for w in words):
-            detected.append(state)
-
-    return detected if detected else ["عام"]
-
-# ================== توليد زاوية جديدة ==================
-def generate_angle(psych_state):
-    angle_bank = {
-        "ضغط": [
-            "خلينا نفصل بين اللي في إيدك واللي برا سيطرتك",
-            "الضغط لما يزيد، العقل بيحتاج تهوية مش قرارات",
-            "مش كل حمل لازم يتشال دلوقتي"
-        ],
-        "حيرة": [
-            "الحيرة معناها إنك فاهم أكتر من اختيار",
-            "مش لازم تختار دلوقتي",
-            "أوقات عدم القرار هو قرار ذكي"
-        ],
-        "غضب": [
-            "الغضب طاقة، يا إما تكسر يا إما تبني",
-            "مش كل حاجة تستاهل رد فعل",
-            "سكوتك أحيانًا أقوى من أي رد"
-        ],
-        "حزن": [
-            "الحزن مش ضعف، ده دليل إحساس",
-            "الوجع مش عدوك، بس مينفعش يسوقك",
-            "فيه حاجات بتوجع عشان تنضج"
-        ],
-        "خوف": [
-            "الخوف بيحمي أكتر ما بيأذي",
-            "مش كل خوف إنذار حقيقي",
-            "أنت أقوى من السيناريوهات اللي في دماغك"
-        ],
-        "عام": [
-            "خلينا نبص للصورة الكبيرة",
-            "مش كل سؤال محتاج إجابة دلوقتي",
-            "الفهم أهم من الحل السريع"
-        ]
-    }
-
-    for _ in range(10):
-        angle = random.choice(angle_bank[psych_state])
-        if angle not in st.session_state.used_angles:
-            st.session_state.used_angles.add(angle)
-            return angle
-
-    return random.choice(angle_bank[psych_state])
-
-# ================== الرد الذكي ==================
+# ---------- الردود الذكية ----------
 def smart_response(user_text):
-    states = psychological_analysis(user_text)
-    main_state = states[0]
-
-    angle = generate_angle(main_state)
-
-    openers = [
-        "خليني أتكلم معاك بهدوء",
-        "اسمعني للآخر",
-        "تعالى نبص للموضوع من زاوية مختلفة",
-        "خلينا نهدى الأول"
+    ideas = [
+        "بص، خلينا نفكر فيها واحدة واحدة من غير استعجال.",
+        "اللي انت حاسس بيه ده مفهوم، بس مش لازم ياخدك في سكة وحشة.",
+        "أوقات الحل مش في اللي إحنا عايزينه، في اللي يناسبنا.",
+        "خليني أقولك حاجة من غير تنظير.",
+        "مش كل حاجة تتحل بالقوة، في حاجات تتحل بالعقل."
     ]
 
-    closers = [
-        "خد وقتك، مش مستعجلين",
-        "أنا هنا مكمل معاك",
-        "الكلام ده مش نصيحة، ده تفكير مشترك",
-        "اللي حاسس بيه له حق"
+    endings = [
+        "إنت مش لوحدك، بس القرار في الآخر قرارك.",
+        "خد نفس كده، وفكر بهدوء.",
+        "الموضوع أبسط مما متخيله.",
+        "إنت فاهم أكتر ما إنت فاكر.",
+        "سيبها تمشي واحدة واحدة."
     ]
 
-    response = (
-        f"{random.choice(openers)}. "
-        f"{angle}. "
-        f"من كلامك واضح إنك بتمر بحالة {main_state}. "
-        f"وده طبيعي جدًا في المرحلة دي. "
-        f"{random.choice(closers)}."
-    )
+    response = f"{random.choice(ideas)} {user_text}. {random.choice(endings)}"
 
-    st.session_state.memory.append({
-        "time": datetime.now().isoformat(),
-        "input": user_text,
-        "state": main_state,
-        "response": response
-    })
+    # منع التكرار
+    while response in USED_RESPONSES:
+        response = f"{random.choice(ideas)} {user_text}. {random.choice(endings)}"
 
+    USED_RESPONSES.add(response)
     return response
 
-# ================== الصوت ==================
+# ---------- تحويل الكلام لصوت ----------
 async def speak(text):
-    file_name = f"voice_{SESSION_ID}.mp3"
+    file_name = "voice.mp3"
     communicate = edge_tts.Communicate(text, VOICE)
     await communicate.save(file_name)
     return file_name
 
-# ================== الواجهة ==================
-st.set_page_config(page_title="AI نفسي مصري", page_icon="🧠", layout="centered")
-st.title("🧠 دكتور نفسي ذكي – مصري")
+# ---------- واجهة ----------
+st.set_page_config(page_title="Safe is Best | Dr. Sharon", page_icon="🌿")
+st.markdown('<div style="text-align:center; font-size:30px; font-weight:bold; color:#38bdf8;">Safe is Best | Dr. Sharon</div>', unsafe_allow_html=True)
 
-user_input = st.text_area("اتكلم براحتك، من غير تفكير:")
+user_input = st.text_area("اتكلم براحتك:")
 
-if st.button("اتكلم"):
+if st.button("كلمه"):
     if user_input.strip() == "":
-        st.warning("اكتب حاجة الأول")
+        st.warning("قول حاجة الأول")
     else:
         reply = smart_response(user_input)
-        st.markdown("### الرد:")
+        st.write("**الرد:**")
         st.write(reply)
 
         audio_file = asyncio.run(speak(reply))
         st.audio(audio_file)
 
-if st.button("جلسة جديدة"):
-    st.session_state.memory = []
-    st.session_state.used_angles = set()
+# رابط واتساب
+st.markdown("---")
+st.markdown(f'<a href="https://wa.me/201009469831" target="_blank" style="background:linear-gradient(90deg, #25d366, #128c7e); color:white; border-radius:15px; padding:12px; text-decoration:none; display:block; text-align:center; font-weight:bold; font-size:18px;">📞 تواصل مباشر مع د. شارون (واتساب)</a>', unsafe_allow_html=True)
+
+# زر جلسة جديدة
+if st.button("🗑️ جلسة جديدة"):
+    st.session_state.messages = []
+    USED_RESPONSES.clear()
     st.experimental_rerun()
