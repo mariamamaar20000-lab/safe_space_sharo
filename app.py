@@ -16,8 +16,7 @@ system_instruction = (
 )
 
 # استخدام الإصدار المستقر لحل مشكلة الـ 404
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+model = genai.GenerativeModel(model_name="gemini-pro")
     system_instruction=system_instruction
 )
 
@@ -47,3 +46,4 @@ if prompt := st.chat_input("تحدث معي، أنا أسمعك..."):
         except Exception as e:
             st.error(f"خطأ تقني: {str(e)}")
             st.info("تأكد من تحديث ملف requirements.txt لضمان عمل البرنامج.")
+
