@@ -1,3 +1,6 @@
 streamlit
 edge-tts
 asyncio
+google-generativeai
+edge-tts
+streamlit
