@@ -6,7 +6,7 @@ st.title("🧠 مستشارك النفسي الذكي")
 
 # قراءة المفتاح من الـ Secrets اللي صلحناها
 try:
-    API_KEY = st.secrets["AIzaSyDrvwbLS9l4_j0DkfsTmujF6E0e9Ki4E9Q"]
+    API_KEY=st.secrets["AIzaSyDrvwbLS9l4_j0DkfsTmujF6E0e9Ki4E9Q"]
     genai.configure(api_key=API_KEY)
     # استخدام الموديل المستقر
     model = genai.GenerativeModel("gemini-1.5-flash")
@@ -32,3 +32,4 @@ if prompt := st.chat_input("تحدث معي..."):
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
             st.error(f"حدث خطأ: {e}")
+
