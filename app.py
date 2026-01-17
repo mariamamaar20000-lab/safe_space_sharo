@@ -1,37 +1,77 @@
 import streamlit as st
 import google.generativeai as genai
 
-# إعداد الصفحة
-st.set_page_config(page_title="Safe Space", page_icon="🧠")
+# ================== إعداد الصفحة ==================
+st.set_page_config(
+    page_title="Safe Space",
+    page_icon="🧠",
+    layout="centered"
+)
+
 st.title("🧠 مستشارك النفسي الذكي")
+st.caption("مساحة آمنة للفضفضة والدعم 🤍")
 
-# تأكدي إن الكلمة هنا هي "API_KEY" فقط
-if "API_KEY" in st.secrets:
-    try:
-        genai.configure(api_key=st.secrets["API_KEY"])
-        
-        # استخدمي الاسم ده بالتحديد، ده اللي هيحل مشكلة الـ 404
-        model = genai.GenerativeModel("gemini-1.5-flash-latest")
-        
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
+# ================== التأكد من API KEY ==================
+if "API_KEY" not in st.secrets:
+    st.error("❌ API_KEY مش موجود في Streamlit Secrets")
+    st.stop()
 
-        for msg in st.session_state.messages:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
+# ================== إعداد Gemini ==================
+try:
+    genai.configure(api_key=st.secrets["API_KEY"])
+    model = genai.GenerativeModel("gemini-1.0-pro")
+except Exception as e:
+    st.error(f"خطأ في إعداد Gemini: {e}")
+    st.stop()
 
-        if prompt := st.chat_input("أنا هنا بسمعك.. حابة تحكي عن إيه؟"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
+# ================== System Prompt ==================
+SYSTEM_PROMPT = """
+أنت مستشار نفسي داعم.
+بتتكلم باللهجة المصرية بهدوء واحترام.
+بتسمع أكتر ما بتتكلم، ومش بتحكم على اللي قدامك.
+"""
 
-            with st.chat_message("assistant"):
-                # طلب الرد
-                response = model.generate_content(prompt)
-                st.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
-                
-    except Exception as e:
-        st.error(f"حصل خطأ بسيط: {e}")
-else:
-    st.warning("رجاءً تأكدي من تسمية المفتاح API_KEY في صفحة Secrets.")
+# ================== Session State ==================
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "user", "content": SYSTEM_PROMPT}
+    ]
+
+# ================== عرض المحادثة ==================
+for msg in st.session_state.messages[1:]:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# ================== إدخال المستخدم ==================
+if prompt := st.chat_input("أنا هنا بسمعك.. تحب تحكي عن إيه؟"):
+    st.session_state.messages.append(
+        {"role": "user", "content": prompt}
+    )
+
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        try:
+            chat = model.start_chat(history=[
+                {"role": m["role"], "parts": [m["content"]]}
+                for m in st.session_state.messages
+            ])
+
+            response = chat.send_message(prompt)
+            reply = response.text or "أنا معاك، خد وقتك واحكي 🤍"
+
+            st.markdown(reply)
+            st.session_state.messages.append(
+                {"role": "assistant", "content": reply}
+            )
+
+        except Exception as e:
+            st.error(f"حصل خطأ أثناء الرد: {e}")
+
+# ================== زر مسح المحادثة ==================
+if st.button("🗑️ مسح المحادثة"):
+    st.session_state.messages = [
+        {"role": "user", "content": SYSTEM_PROMPT}
+    ]
+    st.experimental_rerun()
