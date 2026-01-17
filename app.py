@@ -19,7 +19,8 @@ if "API_KEY" not in st.secrets:
 # ================== إعداد Gemini ==================
 try:
     genai.configure(api_key=st.secrets["API_KEY"])
-    model = genai.GenerativeModel("gemini-1.0-pro")
+    # ✅ السطر الصح للموديل بعد تثبيت آخر نسخة
+    model = genai.GenerativeModel("gemini-pro")
 except Exception as e:
     st.error(f"خطأ في إعداد Gemini: {e}")
     st.stop()
