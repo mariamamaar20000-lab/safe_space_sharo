@@ -1,16 +1,17 @@
 import streamlit as st
 import google.generativeai as genai
 
+# 1. إعداد الصفحة
 st.set_page_config(page_title="Safe Space", page_icon="🧠")
 st.title("🧠 مستشارك النفسي الذكي")
 
-# تأكدي إن الكلمة هنا "API_KEY" مش المفتاح نفسه
+# 2. التأكد من المفتاح (نستخدم اسم المتغير API_KEY)
 if "API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["API_KEY"])
         
-        # تغيير بسيط في اسم الموديل لضمان التوافق
-        model = genai.GenerativeModel("models/gemini-1.5-flash")
+        # جربي gemini-pro لأنه الأكثر استقراراً في النسخ الحالية
+        model = genai.GenerativeModel("gemini-pro")
         
         if "messages" not in st.session_state:
             st.session_state.messages = []
@@ -25,13 +26,12 @@ if "API_KEY" in st.secrets:
                 st.markdown(prompt)
 
             with st.chat_message("assistant"):
-                # طلب الرد من الموديل
+                # توليد الرد
                 response = model.generate_content(prompt)
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
                 
     except Exception as e:
-        # لو طلع خطأ 404 تاني، جربي تغيري gemini-1.5-flash لـ gemini-pro
         st.error(f"حصل خطأ بسيط: {e}")
 else:
-    st.warning("رجاءً تأكدي من إضافة API_KEY في إعدادات Secrets.")
+    st.warning("رجاءً تأكدي من تسمية المفتاح API_KEY في صفحة Secrets.")
