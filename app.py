@@ -15,9 +15,9 @@ system_instruction = (
     "وظيفتك تقديم معلومات نفسية دقيقة ودعم المستخدم بكلمات تفاؤلية."
 )
 
-# استخدمنا flash-latest لضمان أعلى توافق وحل مشكلة الـ 404
+# استخدام الإصدار المستقر لحل مشكلة الـ 404
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash-latest",
+    model_name="gemini-1.5-flash",
     system_instruction=system_instruction
 )
 
@@ -46,4 +46,4 @@ if prompt := st.chat_input("تحدث معي، أنا أسمعك..."):
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
             st.error(f"خطأ تقني: {str(e)}")
-            st.info("تأكد من رفع ملف requirements.txt لضمان عمل البرنامج.")
+            st.info("تأكد من تحديث ملف requirements.txt لضمان عمل البرنامج.")
