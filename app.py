@@ -2,7 +2,7 @@ import streamlit as st
 import edge_tts
 import asyncio
 import random
-import genai  # Gemini AI
+from google.generativeai import client as genai
 
 # ---------- إعداد Gemini ----------
 # ضع المفتاح في Secrets على Streamlit Cloud:
@@ -34,11 +34,8 @@ def smart_response(user_text):
     ]
 
     response = f"{random.choice(ideas)} {user_text}. {random.choice(endings)}"
-
-    # منع التكرار الكامل
     while response in USED_RESPONSES:
         response = f"{random.choice(ideas)} {user_text}. {random.choice(endings)}"
-
     USED_RESPONSES.add(response)
     return response
 
@@ -50,8 +47,8 @@ async def speak(text):
     return file_name
 
 # ---------- واجهة ----------
-st.set_page_config(page_title="Safe Space | D. Sharon", page_icon="🌿")
-st.markdown('<div style="text-align:center; font-size:32px; font-weight:bold; color:#38bdf8;">Safe Space | D. Sharon</div>', unsafe_allow_html=True)
+st.set_page_config(page_title="Safe is Best | D. Sharon", page_icon="🌿")
+st.markdown('<div style="text-align:center; font-size:32px; font-weight:bold; color:#38bdf8;">Safe is Best | D. Sharon</div>', unsafe_allow_html=True)
 
 user_input = st.text_area("اتكلم براحتك:")
 
@@ -59,10 +56,16 @@ if st.button("كلمه"):
     if user_input.strip() == "":
         st.warning("قول حاجة الأول")
     else:
-        # Gemini AI شغال بالكامل
-        reply = genai.generate_response(user_input)  # ضع مفتاحك هنا
-        # الرد الذكي المحلي كنسخة احتياطية لضمان الفشيخية
-        reply = smart_response(user_input)
+        # Gemini AI يولد الرد
+        try:
+            response = genai.generate_text(
+                prompt=user_input,
+                model="chat-bison-001"
+            )
+            reply = response["candidates"][0]["content"]
+        except:
+            # لو حصل أي مشكلة، استخدم الرد المحلي
+            reply = smart_response(user_input)
 
         st.write("**الرد:**")
         st.write(reply)
