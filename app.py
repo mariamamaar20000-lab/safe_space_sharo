@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # 1. الربط المباشر بالمفتاح بتاعك (حطيتهولك جاهز يا دكتور)
-API_KEY = "AIzaSyC5iDd3NlSQSMPmKJfPsV7QD0joxEeT_LA"
+API_KEY="AIzaSyC5iDd3NlSQSMPmKJfPsV7QD0joxEeT_LA"
 genai.configure(api_key=API_KEY)
 
 # 2. تصميم الواجهة (الاستايل الكحلي الفخم)
@@ -73,3 +73,4 @@ with col1:
         st.rerun()
 with col2:
     st.markdown(f'<a href="https://wa.me/201009469831" target="_blank" style="text-decoration:none;"><div style="background:#25d366; color:white; padding:10px; border-radius:10px; text-align:center; font-weight:bold;">📞 واتساب د. شارون</div></a>', unsafe_allow_html=True)
+
