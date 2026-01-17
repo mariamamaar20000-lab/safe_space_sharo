@@ -5,45 +5,36 @@ import google.generativeai as genai
 st.set_page_config(page_title="Safe Space", page_icon="🧠")
 st.title("🧠 مستشارك النفسي الذكي")
 
-# 1. وضع مفتاح الـ API مباشرة
-API_KEY = "AIzaSyDrvwbLS9l4_j0DkfsTmujF6E0e9Ki4E9Q"
+# 1. إعداد المفتاح من Secrets
+API_KEY = st.secrets["AIzaSyDrvwbLS9l4_j0DkfsTmujF6E0e9Ki4E9Q"]
 genai.configure(api_key=API_KEY)
 
-# 2. إعداد الموديل بتعليمات الشخصية النفسية
-system_instruction = (
-    "أنت خبير في علم النفس، تتحدث بلهجة هادئة وداعمة وذكية مثل Gemini. "
-    "وظيفتك تقديم معلومات نفسية دقيقة ودعم المستخدم بكلمات تفاؤلية."
+# 2. إعداد الموديل
+# تأكدي أن الأسطر التالية تبدأ من أول السطر بدون مسافات إضافية
+system_instruction = "أنت خبير في علم النفس، تتحدث بلهجة هادئة وداعمة."
+
+model = genai.GenerativeModel(
+    model_name="gemini-pro"
 )
 
-# استخدام الإصدار المستقر لحل مشكلة الـ 404
-model = genai.GenerativeModel(model_name="gemini-pro")
-    system_instruction=system_instruction
-)
-
-# 3. حفظ المحادثة في الذاكرة
+# 3. حفظ المحادثة
 if "chat" not in st.session_state:
     st.session_state.chat = model.start_chat(history=[])
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# عرض الرسائل السابقة
+# عرض الرسائل
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# 4. صندوق الدردشة والرد
-if prompt := st.chat_input("تحدث معي، أنا أسمعك..."):
+# 4. صندوق الدردشة
+if prompt := st.chat_input("تحدث معي..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        try:
-            # طلب الرد من الموديل
-            response = st.session_state.chat.send_message(prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
-        except Exception as e:
-            st.error(f"خطأ تقني: {str(e)}")
-            st.info("تأكد من تحديث ملف requirements.txt لضمان عمل البرنامج.")
-
+        response = st.session_state.chat.send_message(prompt)
+        st.markdown(response.text)
+        st.session_state.messages.append({"role": "assistant", "content": response.text})
