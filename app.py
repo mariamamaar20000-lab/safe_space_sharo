@@ -8,7 +8,7 @@ st.title("🧠 مستشارك النفسي الذكي")
 # التأكد من وجود المفتاح
 if "API_KEY" in st.secrets:
     try:
-        genai.configure(api_key=st.secrets["AIzaSyDrvwbLS9l4_j0DkfsTmujF6E0e9Ki4E9Q"])
+        genai.configure(api_key=st.secrets["API_KEY"])
         
         # 1. إعداد الموديل مع "تعليمات النظام" عشان يتقمص الشخصية
         model = genai.GenerativeModel(
