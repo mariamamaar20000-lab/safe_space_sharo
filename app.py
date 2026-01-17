@@ -1,14 +1,17 @@
 import streamlit as st
 import google.generativeai as genai
 
+st.set_page_config(page_title="Safe Space")
 st.title("🧠 مستشارك النفسي الذكي")
 
-# ربط المفتاح من Secrets
+# قراءة المفتاح من الـ Secrets اللي صلحناها
 try:
-    genai.configure(api_key=st.secrets["API_KEY"])
+    API_KEY = st.secrets["AIzaSyDrvwbLS9l4_j0DkfsTmujF6E0e9Ki4E9Q"]
+    genai.configure(api_key=API_KEY)
+    # استخدام الموديل المستقر
     model = genai.GenerativeModel("gemini-1.5-flash")
 except Exception as e:
-    st.error("فيه مشكلة في مفتاح الـ API، تأكدي من صفحة Secrets")
+    st.error("تأكدي من كتابة API_KEY صح في صفحة Secrets")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -28,4 +31,4 @@ if prompt := st.chat_input("تحدث معي..."):
             st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            st.error(f"خطأ: {e}")
+            st.error(f"حدث خطأ: {e}")
